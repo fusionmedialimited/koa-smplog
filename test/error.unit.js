@@ -3,6 +3,7 @@ var test = require('ava').test
 var st = require('supertest-as-promised')
 var koa = require('koa')
 var fmt = require('util').format
+var strip = require('chalk').stripColor
 
 var log = require('..')
 
@@ -43,7 +44,7 @@ function * throw_err (next) {
 
 function parse_line (line) {
   var format = /\[([^\]]*)\] ([^{]*)([\s\S]*)/gm
-  var match = format.exec(line)
+  var match = format.exec(strip(line))
   return {
     level: match[1],
     message: match[2].trim(),
