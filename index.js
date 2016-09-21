@@ -33,7 +33,7 @@ module.exports = function (defaults, options) {
     // Log request-start event
     var arrow = chalk.gray('<--')
     var method = chalk.bold(this.method)
-    var url = chalk.gray(this.originalUrl)
+    var url = this.originalUrl
     this.log.info(`  ${arrow} ${method} ${url}`, { event: 'request-start' })
 
     try {
@@ -87,10 +87,10 @@ function out (ctx, start, len, err, event) {
     : event === 'close' ? chalk.yellow('-x-')
     : chalk.gray('-->')
   var method = chalk.bold(ctx.method)
-  var url = chalk.gray(ctx.originalUrl)
+  var url = ctx.originalUrl
   var code = chalk[color](status)
-  var duration = chalk.gray(format_time(start))
-  var size = chalk.gray(length)
+  var duration = chalk.dim(format_time(start))
+  var size = chalk.dim(length)
 
   var level = status < 400 ? 'info' : (status < 500 ? 'warn' : 'error')
 

@@ -33,7 +33,7 @@
     "eslint-config-standard": "6.0.1",
     "eslint-plugin-promise": "2.0.1",
     "eslint-plugin-standard": "2.0.0",
-    "husky": "0.11.7",
+    "husky": "0.11.8",
     "koa": "1.2.4",
     "nyc": "8.3.0",
     "strip-ansi": "3.0.1",
@@ -47,7 +47,7 @@
     "humanize-number": "0.0.2",
     "object-assign": "4.1.0",
     "passthrough-counter": "1.0.0",
-    "smplog": "0.0.2",
+    "smplog": "0.0.3",
     "uid": "0.0.2"
   },
   "ava": {
