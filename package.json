@@ -1,6 +1,6 @@
 {
   "name": "koa-smplog",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "smplogging koa requests",
   "main": "index.js",
   "scripts": {
