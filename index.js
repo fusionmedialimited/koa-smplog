@@ -22,6 +22,9 @@ var colorCodes = {
 }
 
 module.exports = function (defaults, options) {
+  defaults = defaults || {}
+  options = options || {}
+
   return function * (next) {
     var start = Date.now()
     var ctx = this
