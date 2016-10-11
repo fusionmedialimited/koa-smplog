@@ -28,16 +28,30 @@ module.exports = function (defaults, options) {
     var res = this.res
 
     if (this.log) {
-      this.log.tag(defaults)
+      var parent = this.log
+
+      // Patch log for subsequent middleware with blackhole logger if request should be filtered
+      if (options.filter && !options.filter(ctx)) {
+        this.log = Log({}, { log: () => {} })
+      } else {
+        this.log.tag(defaults)
+      }
       yield next
+
+      // Unpatch log
+      this.log = parent
     } else {
       // Setup trace id
       this.smplog_trace = this.smplog_trace ||
         this.get('x-smplog-trace') ||
         (Date.now() + uid(8))
 
-      // Initialize log
-      this.log = Log(assign({ smplog_trace: this.smplog_trace }, defaults), options)
+      // Initialize log with blackhole logger if request should be filtered
+      if (options.filter && !options.filter(ctx)) {
+        this.log = Log({}, { log: () => {} })
+      } else {
+        this.log = Log(assign({ smplog_trace: this.smplog_trace }, defaults), options)
+      }
 
       // Attach request client to log
       var client = request_intercept(request)
