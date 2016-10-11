@@ -16,7 +16,7 @@ test('the app should add tags set in previous middleware to the request-end log 
     .expect(200, '200')
     .then(() => {
       var expected = /"tag":"tag"/
-      t.context.app.stdout.split('\n')[1].should.match(expected)
+      t.context.app.stdout.split('\n')[0].should.match(expected)
     })
 })
 

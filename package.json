@@ -29,29 +29,33 @@
   "devDependencies": {
     "ava": "0.16.0",
     "chai": "3.5.0",
-    "eslint": "3.5.0",
-    "eslint-config-standard": "6.0.1",
-    "eslint-plugin-promise": "2.0.1",
-    "eslint-plugin-standard": "2.0.0",
-    "husky": "0.11.8",
+    "eslint": "3.7.1",
+    "eslint-config-standard": "6.2.0",
+    "eslint-plugin-promise": "3.0.0",
+    "eslint-plugin-standard": "2.0.1",
+    "husky": "0.11.9",
     "koa": "1.2.4",
-    "nyc": "8.3.0",
+    "koa-mount": "1.3.0",
+    "nyc": "8.3.1",
     "strip-ansi": "3.0.1",
     "supertest": "2.0.0",
     "supertest-as-promised": "4.0.0"
   },
   "dependencies": {
+    "bluebird": "3.4.6",
     "bytes": "2.4.0",
     "chalk": "1.1.3",
     "flat": "2.0.1",
     "humanize-number": "0.0.2",
     "object-assign": "4.1.0",
     "passthrough-counter": "1.0.0",
-    "smplog": "0.0.3",
+    "request": "2.75.0",
+    "request-middleware-framework": "0.0.4",
+    "smplog": "0.0.4",
     "uid": "0.0.2"
   },
   "ava": {
-    "timeout": "5s",
+    "timeout": "20s",
     "verbose": true,
     "files": [
       "test/*unit.js"
@@ -62,10 +66,10 @@
   },
   "nyc": {
     "check-coverage": true,
-    "lines": 80,
-    "statements": 80,
-    "functions": 80,
-    "branches": 80,
+    "lines": 70,
+    "statements": 70,
+    "functions": 70,
+    "branches": 70,
     "reporter": [
       "text",
       "text-summary",

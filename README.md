@@ -32,7 +32,7 @@ Each logged response will include details about the response size, status, durat
 If an error is thrown in the request context, a full JSON description of that error (including the stack trace) will be included in the metadata of the response log line.
 
 ##### Tracing
-`koa-smplog` will also automatically generate a trace-id for every incoming request. Any log messages emitted within that request context will include this trace id, and is useful for filtering out individual request streams. If the `x-request-trace` header is included in the request, or `this.trace_id` is previously set on the context, koa-smplog will use this trace id instead of generating a new one. This is primarily to enable tracing individual requests across service boundaries.
+`koa-smplog` will also automatically generate a trace-id for every incoming request. Any log messages emitted within that request context will include this trace id, and is useful for filtering out individual request streams. If the `x-request-trace` header is included in the request, or `this.smplog_trace` is previously set on the context, koa-smplog will use this trace id instead of generating a new one. This is primarily to enable tracing individual requests across service boundaries.
 
 ##### Tagging
 `koa-smplog` exposes a log instance to subsequent middleware as `this.log`. This can be used to log request details with the trace-id attached. It can also be tagged using `this.log.tag({ prop: 'val', ... })`. These tags will be added to the metadata of the final response message. Tags are accumulated, so you can tag multiple times from multiple middleware functions.

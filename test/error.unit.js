@@ -20,9 +20,9 @@ test('the app should log uncaught errors', function (t) {
         .split('\n')
         .filter(Boolean)
         .map(parse_line)
-      lines[1].meta.error.message.should.equal('this is an error')
-      lines[1].meta.error.name.should.equal('Error')
-      lines[1].meta.error.prop1.should.equal('error-prop')
+      lines[0].meta.error.message.should.equal('this is an error')
+      lines[0].meta.error.name.should.equal('Error')
+      lines[0].meta.error.prop1.should.equal('error-prop')
     })
 })
 

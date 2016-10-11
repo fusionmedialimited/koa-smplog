@@ -18,7 +18,7 @@ test('the app should log the response size of streamed data', function (t) {
     .expect(200, '200\n')
     .then(() => {
       var expected = /"response_size_bytes":4/
-      t.context.app.stdout.split('\n')[1].should.match(expected)
+      t.context.app.stdout.split('\n')[0].should.match(expected)
     })
 })
 

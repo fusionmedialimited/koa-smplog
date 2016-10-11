@@ -17,7 +17,7 @@ test('the app should add a trace id to all messages logged in a request context'
     .expect(200, '200')
     .then(() => {
       var trace
-      var expected = /"trace":"([0-9A-Za-z]+)"/
+      var expected = /"smplog_trace":"([0-9A-Za-z]+)"/
       t.context.app.stdout
         .split('\n')
         .filter(Boolean)
@@ -30,13 +30,13 @@ test('the app should add a trace id to all messages logged in a request context'
     })
 })
 
-test('the app should reuse a trace id specified in x-request-trace header', function (t) {
+test('the app should reuse a trace id specified in x-smplog-trace header', function (t) {
   return st(t.context.app.listen(0))
     .get('/200')
-    .set('X-Request-Trace', 'request1')
+    .set('X-Smplog-Trace', 'request1')
     .expect(200, '200')
     .then(() => {
-      var expected = /"trace":"request1"/
+      var expected = /"smplog_trace":"request1"/
       t.context.app.stdout
         .split('\n')
         .filter(Boolean)
@@ -52,7 +52,7 @@ test('the app should reuse a trace id specified by previous middleware', functio
     .get('/preset-trace')
     .expect(200)
     .then(() => {
-      var expected = /"trace":"preset-trace"/
+      var expected = /"smplog_trace":"preset-trace"/
       t.context.app.stdout
         .split('\n')
         .filter(Boolean)
@@ -75,7 +75,7 @@ function test_server () {
 }
 
 function * set_trace (next) {
-  if (this.originalUrl === '/preset-trace') this.trace_id = 'preset-trace'
+  if (this.originalUrl === '/preset-trace') this.smplog_trace = 'preset-trace'
   yield next
 }
 
