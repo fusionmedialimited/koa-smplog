@@ -1,4 +1,15 @@
 
+0.1.0 / 2016-10-11
+==================
+
+  * add filter function to suppress arbitrary request logs
+  * make incoming request logs optional
+  * strip query parameters
+  * log user-agent, referer, remote-ip
+  * support mounted logs
+  * standardize trace header/property names
+  * add request client to trace and log nested request details
+
 0.0.3 / 2016-09-21
 ==================
 
