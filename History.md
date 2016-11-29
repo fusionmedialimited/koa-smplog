@@ -1,4 +1,10 @@
 
+0.1.5 / 2016-11-28
+==================
+
+  * add tests for safe error flatten
+  * set max depth for error flatten
+
 0.1.4 / 2016-11-28
 ==================
 
