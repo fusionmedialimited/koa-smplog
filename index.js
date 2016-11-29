@@ -206,7 +206,7 @@ var format_length = module.exports.format_length = function (len, status) {
 }
 
 var format_error = module.exports.format_error = function (err) {
-  var obj = flat(err)
+  var obj = flat(err, { maxDepth: 4 })
   obj.name = err.name
   obj.message = err.message
   /* istanbul ignore else */
