@@ -11,6 +11,7 @@ var parse = require('url').parse
 var request_intercept = require('request-intercept')
 var request = require('request')
 var Promise = require('bluebird')
+var stringify = require('json-stringify-safe')
 var pkg = require('./package.json')
 
 var colorCodes = {
@@ -75,11 +76,11 @@ module.exports = function (defaults, options) {
       // Attach request client to log
       var client = request_intercept(request)
       client.use(request_interceptor(this.log))
-      this.log.request = client.getMiddlewareEnabledRequest().defaults({
+      this.log.request = this.log.agent = client.getMiddlewareEnabledRequest().defaults({
         json: true,
         headers: {
           'x-smplog-trace': this.smplog_trace,
-          'user-agent': `smplog client v${pkg.version} - ${JSON.stringify(defaults)}`
+          'user-agent': `smplog client v${pkg.version} - ${stringify(defaults)}`
         }
       })
       Promise.promisifyAll(this.log.request)
@@ -209,6 +210,10 @@ var format_error = module.exports.format_error = function (err) {
   var obj = flat(err, { maxDepth: 4 })
   obj.name = err.name
   obj.message = err.message
+  for (var prop in obj) {
+    if (typeof obj[prop] === 'object') obj[prop] = stringify(obj[prop])
+  }
+
   /* istanbul ignore else */
   if (err.stack) {
     var rootdir = __dirname.split(path.sep)
