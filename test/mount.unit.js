@@ -18,7 +18,7 @@ test('the app should not log duplicate lines when a logging apps are mounted', f
     .expect(200, { success: 'ok' })
     .then(() => {
       var expected = [
-        /\[info] <─  GET \/mount 200 (.*)"mount":"mounted"(.*)/
+        /\[info]  <─  GET \/mount 200 (.*)"mount":"mounted"(.*)/
       ]
       t.context.app.stdout
         .split('\n')

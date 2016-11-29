@@ -17,7 +17,7 @@ test('the app should log successful responses at the info level', function (t) {
     .expect(200, '200')
     .then(() => {
       var expected = [
-        /\[info] <─  GET \/200 200 (.*)/
+        /\[info]  <─  GET \/200 200 (.*)/
       ]
       t.context.app.stdout
         .split('\n')
@@ -35,7 +35,7 @@ test('the app should log 400 >= status < 500 responses at the warn level', funct
     .expect(403, '403')
     .then(() => {
       var expected = [
-        /\[warn] <─  GET \/403 403 (.*)/
+        /\[warn]  <─  GET \/403 403 (.*)/
       ]
       t.context.app.stdout
         .split('\n')

@@ -17,9 +17,9 @@ test('the app should log nested requests made via the log request client', funct
     .expect(200, { response: { success: 'ok' } })
     .then(() => {
       var expected = [
-        /\[info] <─  GET \/nested 200 (.*)/,
-        /\[info]  ┌  GET http:\/\/127.0.0.1:(\d+)\/nested 200 (.*)/,
-        /\[info] <┘  GET \/ 200 (.*)/
+        /\[info]  <─  GET \/nested 200 (.*)/,
+        /\[info]   ┌  GET http:\/\/127.0.0.1:(\d+)\/nested 200 (.*)/,
+        /\[info]  <┘  GET \/ 200 (.*)/
       ]
       t.context.app.stdout
         .split('\n')
