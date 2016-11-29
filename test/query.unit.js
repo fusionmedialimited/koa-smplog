@@ -17,7 +17,7 @@ test('the app should drop any query parameters from the log', function (t) {
     .expect(200, { success: 'ok' })
     .then(() => {
       var expected = [
-        /\[info\] {3}--> GET \/query 200 (.*)/
+        /\[info] <─  GET \/query 200 (.*)/
       ]
       t.context.app.stdout.indexOf('hasaquery').should.equal(-1)
       t.context.app.stdout

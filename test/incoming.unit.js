@@ -17,8 +17,8 @@ test('the app should not log incoming requests if incoming=false', function (t) 
     .expect(200, { success: 'ok' })
     .then(() => {
       var expected = [
-        /\[info\] {3}<-- GET \/ (.*)/,
-        /\[info\] {3}--> GET \/ 200 (.*)/
+        /\[info] >┐  GET \/ (.*)/,
+        /\[info] <┘  GET \/ 200 (.*)/
       ]
       t.context.app.stdout
         .split('\n')

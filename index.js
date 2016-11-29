@@ -53,7 +53,23 @@ module.exports = function (defaults, options) {
       if (options.filter && !options.filter(ctx)) {
         this.log = Log({}, { log: () => {} })
       } else {
-        this.log = Log(assign({ smplog_trace: this.smplog_trace }, defaults), options)
+        var logfn = options.log || console.log
+        var logwrap = (fmt, level, msg, meta) => {
+          if (this.log._nest) {
+            var color = options.color !== false && String(process.env.SMPLOG_COLORS) !== 'false'
+            var arrow = this.log._first ? ' ┌  ' : ' ├  '
+            arrow = color ? chalk.gray(arrow) : arrow
+            msg = color ? chalk.gray(msg) : msg
+            meta = color ? chalk.dim.gray(meta || '') : meta
+            logfn(fmt, level, arrow + msg, meta)
+          } else {
+            logfn(fmt, level, msg, meta)
+          }
+          this.log._first = false
+        }
+        this.log = Log(assign({ smplog_trace: this.smplog_trace }, defaults), assign({}, options, { log: logwrap }))
+        this.log._nest = true
+        this.log._first = true
       }
 
       // Attach request client to log
@@ -73,7 +89,7 @@ module.exports = function (defaults, options) {
       this.log.tag = (data) => assign(this.log._tags, data)
 
       // Log request-start event
-      var arrow = chalk.gray('<--')
+      var arrow = chalk.gray('>┐ ')
       var method = chalk.bold(this.method)
       var url = this.originalUrl.split('?')[0]
       var ip = this.ip.split(':').filter((i) => ~i.indexOf('.')).join('')
@@ -86,7 +102,9 @@ module.exports = function (defaults, options) {
       if (referrer) log_info.referrer = referrer
 
       if (options.incoming) {
-        this.log.info(`  ${arrow} ${method} ${url}`, log_info)
+        this.log._nest = false
+        this.log.info(`${arrow} ${method} ${url}`, log_info)
+        this.log._nest = true
       }
 
       try {
@@ -133,9 +151,10 @@ function out (ctx, start, len, err, event) {
   var s = status / 100 | 0
   var color = colorCodes[s]
   var length = format_length(len, status)
-  var arrow = err ? chalk.red('xxx')
-    : event === 'close' ? chalk.yellow('-x-')
-    : chalk.gray('-->')
+  var bracket = ctx.log._first ? '─ ' : '┘ '
+  var arrow = err ? chalk.red('x' + bracket)
+    : event === 'close' ? chalk.yellow('x' + bracket)
+    : chalk.gray('<' + bracket)
   var method = chalk.bold(ctx.method)
   var url = ctx.originalUrl.split('?')[0]
   var code = chalk[color](status)
@@ -161,7 +180,9 @@ function out (ctx, start, len, err, event) {
 
   if (err) { log_info.error = format_error(err) }
 
-  ctx.log[level](`  ${arrow} ${method} ${url} ${code} ${duration} ${size}`, assign(log_info, ctx.log._tags))
+  ctx.log._nest = false
+  ctx.log[level](`${arrow} ${method} ${url} ${code} ${duration} ${size}`, assign(log_info, ctx.log._tags))
+  ctx.log._nest = true
 }
 
 var format_time = module.exports.format_time = function (start) {
@@ -202,7 +223,7 @@ var format_error = module.exports.format_error = function (err) {
 var request_interceptor = module.exports.request_interceptor = (log) => function (options, callback, next) {
   var start = Date.now()
   var trace = options.headers['x-smplog-trace']
-  var parsed = parse(options.uri)
+  var parsed = parse((options.baseUrl || '') + (options.uri || ''))
   var queryless = `${parsed.protocol}//${parsed.host}${parsed.pathname}`
 
   var _callback = function (err, response, body) {
@@ -213,13 +234,13 @@ var request_interceptor = module.exports.request_interceptor = (log) => function
     var color = colorCodes[s]
     var len = response && response.headers ? (response.headers['content-length'] || 0) : 0
     var length = format_length(+len, status)
-    var arrow = err ? chalk.red('xxx') : chalk.gray('<->')
-    var method = chalk.bold.dim(options.method)
+    var method = chalk.bold.yellow.dim(options.method)
     var code = chalk[color].dim(status)
-    var duration = chalk.dim(format_time(start))
-    var size = chalk.dim(length)
+    var duration = chalk.gray(format_time(start))
+    var size = chalk.gray(length)
+    var level = err ? 'error' : (status < 400 ? 'info' : (status < 500 ? 'warn' : 'error'))
 
-    var msg = `      ${arrow} ${method} ${chalk.dim(queryless)} ${code} ${duration} ${size}`
+    var msg = `${method} ${chalk.gray(queryless)} ${code} ${duration} ${size}`
     var meta = {
       event: 'nested-request',
       smplog_trace: trace,
@@ -229,9 +250,10 @@ var request_interceptor = module.exports.request_interceptor = (log) => function
       response_time_ms: Date.now() - start,
       response_size_bytes: +len || 0
     }
-    log.info(msg, meta)
+    log[level](msg, meta)
 
-    callback(err, response, body)
+    callback && callback(err, response, body)
   }
-  next(options, _callback)
+
+  return next(options, _callback)
 }

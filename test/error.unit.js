@@ -43,7 +43,7 @@ function * throw_err (next) {
 }
 
 function parse_line (line) {
-  var format = /\[([^\]]*)\] ([^{]*)([\s\S]*)/gm
+  var format = /\[([^\]]*)] ([^{]*)([\s\S]*)/gm
   var match = format.exec(strip(line))
   return {
     level: match[1],
