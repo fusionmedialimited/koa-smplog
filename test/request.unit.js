@@ -1,6 +1,6 @@
 require('chai').should()
 var test = require('ava').test
-var st = require('supertest-as-promised')
+var st = require('supertest')
 var koa = require('koa')
 var fmt = require('util').format
 var strip_ansi = require('strip-ansi')
@@ -43,7 +43,7 @@ function test_server () {
 function * make_request (next) {
   if (this.path === '/') {
     var url = this.href + 'nested'
-    var res = yield this.log.request.getAsync(url)
+    var [ res ] = yield (done) => this.log.request({ uri: url, method: 'GET' }, done)
     this.body = { response: res.body }
   } else if (this.path === '/nested') {
     this.body = { success: 'ok' }

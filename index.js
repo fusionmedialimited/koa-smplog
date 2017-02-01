@@ -10,7 +10,6 @@ var path = require('path')
 var parse = require('url').parse
 var request_intercept = require('request-intercept')
 var request = require('request')
-var Promise = require('bluebird')
 var stringify = require('json-stringify-safe')
 var pkg = require('./package.json')
 
@@ -83,11 +82,6 @@ module.exports = function (defaults, options) {
           'user-agent': `smplog client v${pkg.version} - ${stringify(defaults)}`
         }
       })
-      Promise.promisifyAll(this.log.request)
-
-      // Add tags functionality
-      this.log._tags = {}
-      this.log.tag = (data) => assign(this.log._tags, data)
 
       // Log request-start event
       var arrow = chalk.gray('>┐ ')
@@ -123,8 +117,9 @@ module.exports = function (defaults, options) {
       var body = this.body
       var counter
       if (length == null && body && body.readable) {
+        counter = Counter()
         this.body = body
-          .pipe(counter = Counter())
+          .pipe(counter)
           .on('error', this.onerror)
       }
 

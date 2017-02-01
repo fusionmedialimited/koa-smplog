@@ -1,6 +1,6 @@
 require('chai').should()
 var test = require('ava').test
-var st = require('supertest-as-promised')
+var st = require('supertest')
 var koa = require('koa')
 var mount = require('koa-mount')
 var fmt = require('util').format

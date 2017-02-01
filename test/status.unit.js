@@ -1,6 +1,6 @@
 require('chai').should()
 var test = require('ava').test
-var st = require('supertest-as-promised')
+var st = require('supertest')
 var koa = require('koa')
 var fmt = require('util').format
 var strip_ansi = require('strip-ansi')

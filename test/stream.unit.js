@@ -1,6 +1,6 @@
 require('chai').should()
 var test = require('ava').test
-var st = require('supertest-as-promised')
+var st = require('supertest')
 var koa = require('koa')
 var fmt = require('util').format
 var fs = require('fs')
@@ -15,10 +15,10 @@ test.beforeEach(function (t) {
 test('the app should log the response size of streamed data', function (t) {
   return st(t.context.app.listen(0))
     .get('/')
-    .expect(200, '200\n')
-    .then(() => {
-      var expected = /"response_size_bytes":4/
-      t.context.app.stdout.split('\n')[0].should.match(expected)
+    .expect(200)
+    .then((res) => {
+      new Buffer(res.body).toString().should.equal('200\n')
+      t.context.app.stdout.split('\n')[0].should.match(/"response_size_bytes":4/)
     })
 })
 
