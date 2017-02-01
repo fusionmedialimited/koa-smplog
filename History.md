@@ -1,4 +1,9 @@
 
+0.2.0 / 2017-01-31
+==================
+
+  * remove tags patch since supported in smplog by default, drop bluebird
+
 0.1.6 / 2016-11-28
 ==================
 
