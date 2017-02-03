@@ -27,7 +27,7 @@
   },
   "homepage": "https://github.com/finboxio/koa-smplog#readme",
   "devDependencies": {
-    "ava": "0.17.0",
+    "ava": "0.18.0",
     "chai": "3.5.0",
     "eslint": "3.14.1",
     "eslint-config-standard": "6.2.1",
@@ -50,7 +50,7 @@
     "passthrough-counter": "1.0.0",
     "request": "2.79.0",
     "request-intercept": "0.0.5",
-    "smplog": "0.0.8",
+    "smplog": "0.0.10",
     "uid": "0.0.2"
   },
   "ava": {
