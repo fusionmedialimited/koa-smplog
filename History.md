@@ -1,4 +1,10 @@
 
+0.3.0 / 2018-05-07
+==================
+
+  * Truncate long strings in default error formatter
+  * Remove non-primitive error properties from log output to prevent unexpectedly massive log lines
+
 0.2.1 / 2017-02-03
 ==================
 
