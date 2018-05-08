@@ -206,7 +206,11 @@ var format_error = module.exports.format_error = function (err) {
   obj.name = err.name
   obj.message = err.message
   for (var prop in obj) {
-    if (Object(obj[prop]) === obj[prop]) delete obj[prop]
+    if (Object(obj[prop]) === obj[prop]) {
+      delete obj[prop]
+    } else if (typeof obj[prop] === 'string' && obj[prop].length > 256) {
+      obj[prop] = obj[prop].slice(0, 252) + '...'
+    }
   }
 
   /* istanbul ignore else */
