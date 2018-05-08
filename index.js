@@ -202,11 +202,11 @@ var format_length = module.exports.format_length = function (len, status) {
 }
 
 var format_error = module.exports.format_error = function (err) {
-  var obj = flat(err, { maxDepth: 4 })
+  var obj = flat(err, { maxDepth: 1 })
   obj.name = err.name
   obj.message = err.message
   for (var prop in obj) {
-    if (typeof obj[prop] === 'object') obj[prop] = stringify(obj[prop])
+    if (Object(obj[prop]) === obj[prop]) delete obj[prop]
   }
 
   /* istanbul ignore else */

@@ -23,8 +23,8 @@ test('the app should log uncaught errors', function (t) {
       lines[0].meta.error.message.should.equal('this is an error')
       lines[0].meta.error.name.should.equal('Error')
       lines[0].meta.error.prop1.should.equal('error-prop')
-      lines[0].meta.error['nested.n.n'].should.equal(1)
-      lines[0].meta.error['toonested.n.n.n'].should.equal('{"n":1}')
+      lines[0].meta.error.should.not.have.property('nested.n.n')
+      lines[0].meta.error.should.not.have.property('toonested.n.n.n')
     })
 })
 
