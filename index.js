@@ -25,6 +25,49 @@ module.exports = function (defaults, options) {
   defaults = defaults || {}
   options = options || {}
 
+  function out (ctx, start, len, err, event) {
+    var status = err
+      ? (err.status || 500)
+      : (ctx.status || 404)
+    var s = status / 100 | 0
+    var color = colorCodes[s]
+    var length = format_length(len, status)
+    var bracket = ctx.log._first ? '─ ' : '┘ '
+    var arrow = err ? chalk.red('x' + bracket)
+      : event === 'close' ? chalk.yellow('x' + bracket)
+      : chalk.gray('<' + bracket)
+    var method = chalk.bold(ctx.method)
+    var url = ctx.originalUrl.split('?')[0]
+    var code = chalk[color](status)
+    var duration = chalk.dim(format_time(start))
+    var size = chalk.dim(length)
+    var ip = ctx.ip.split(':').filter((i) => ~i.indexOf('.')).join('')
+    var user_agent = ctx.get('user-agent')
+    var referrer = ctx.get('referer') || ctx.get('referrer')
+
+    var level = status < 400 ? 'info' : (status < 500 ? 'warn' : 'error')
+
+    var log_info = {
+      event: 'request-end',
+      method: ctx.method,
+      url: url,
+      status_code: status,
+      response_time_ms: Date.now() - start,
+      response_size_bytes: len || 0
+    }
+    if (referrer) log_info.referrer = referrer
+    if (user_agent) log_info.user_agent = user_agent
+    if (ip) log_info.ip = ip
+
+    if (err) {
+      log_info.error = (options.format_error || format_error)(err)
+    }
+
+    ctx.log._nest = false
+    ctx.log[level](`${arrow} ${method} ${url} ${code} ${duration} ${size}`, assign(log_info, ctx.log._tags))
+    ctx.log._nest = true
+  }
+
   return function * (next) {
     var start = Date.now()
     var ctx = this
@@ -140,47 +183,6 @@ module.exports = function (defaults, options) {
   }
 }
 
-function out (ctx, start, len, err, event) {
-  var status = err
-    ? (err.status || 500)
-    : (ctx.status || 404)
-  var s = status / 100 | 0
-  var color = colorCodes[s]
-  var length = format_length(len, status)
-  var bracket = ctx.log._first ? '─ ' : '┘ '
-  var arrow = err ? chalk.red('x' + bracket)
-    : event === 'close' ? chalk.yellow('x' + bracket)
-    : chalk.gray('<' + bracket)
-  var method = chalk.bold(ctx.method)
-  var url = ctx.originalUrl.split('?')[0]
-  var code = chalk[color](status)
-  var duration = chalk.dim(format_time(start))
-  var size = chalk.dim(length)
-  var ip = ctx.ip.split(':').filter((i) => ~i.indexOf('.')).join('')
-  var user_agent = ctx.get('user-agent')
-  var referrer = ctx.get('referer') || ctx.get('referrer')
-
-  var level = status < 400 ? 'info' : (status < 500 ? 'warn' : 'error')
-
-  var log_info = {
-    event: 'request-end',
-    method: ctx.method,
-    url: url,
-    status_code: status,
-    response_time_ms: Date.now() - start,
-    response_size_bytes: len || 0
-  }
-  if (referrer) log_info.referrer = referrer
-  if (user_agent) log_info.user_agent = user_agent
-  if (ip) log_info.ip = ip
-
-  if (err) { log_info.error = format_error(err) }
-
-  ctx.log._nest = false
-  ctx.log[level](`${arrow} ${method} ${url} ${code} ${duration} ${size}`, assign(log_info, ctx.log._tags))
-  ctx.log._nest = true
-}
-
 var format_time = module.exports.format_time = function (start) {
   var delta = Date.now() - start
   delta = delta < 10000
@@ -218,7 +220,17 @@ var format_error = module.exports.format_error = function (err) {
     var rootdir = __dirname.split(path.sep)
     var base = rootdir.indexOf('node_modules')
     rootdir = rootdir.slice(0, base >= 0 ? base : rootdir.length).join(path.sep)
-    obj.stack = err.stack.replace(new RegExp(rootdir, 'g'), '.')
+
+    obj.stack = err.stack
+      .replace(new RegExp(rootdir, 'g'), '.')
+      .split('\n')
+
+    let end = 0
+    while (obj.stack[end] && !obj.stack[end].match('./node_modules/koa-compose')) {
+      end++
+    }
+
+    obj.stack = obj.stack.slice(0, end).join('\n')
   }
   return obj
 }

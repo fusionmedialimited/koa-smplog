@@ -7,16 +7,13 @@ var strip = require('chalk').stripColor
 
 var log = require('..')
 
-test.beforeEach(function (t) {
-  t.context.app = test_server()
-})
-
 test('the app should log uncaught errors', function (t) {
-  return st(t.context.app.listen(0))
+  const app = test_server()
+  return st(app.listen(0))
     .get('/throw')
     .expect(500)
     .then(() => {
-      var lines = t.context.app.stdout
+      var lines = app.stdout
         .split('\n')
         .filter(Boolean)
         .map(parse_line)
@@ -29,11 +26,26 @@ test('the app should log uncaught errors', function (t) {
     })
 })
 
-function test_server () {
+test('the app should use custom error formatters', function (t) {
+  const app = test_server({ format_error: (err) => ({ name: err.name }) })
+  return st(app.listen(0))
+    .get('/throw')
+    .expect(500)
+    .then(() => {
+      var lines = app.stdout
+        .split('\n')
+        .filter(Boolean)
+        .map(parse_line)
+      lines[0].meta.error.should.deep.equal({ name: 'Error' })
+    })
+})
+
+function test_server (opts = {}) {
   var app = koa()
   app.stdout = ''
   var logfn = function () { app.stdout += (fmt.apply(null, arguments) + '\n') }
-  app.use(log({}, { log: logfn }))
+  opts.log = logfn
+  app.use(log({}, opts))
   app.use(throw_err)
   app.on('error', () => {})
   return app
