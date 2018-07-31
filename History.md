@@ -1,4 +1,9 @@
 
+0.4.0 / 2018-07-30
+==================
+
+  * Trim stack traces and support custom error formatters
+
 0.3.0 / 2018-05-07
 ==================
 
