@@ -4,7 +4,7 @@ var Counter = require('passthrough-counter')
 var humanize = require('humanize-number')
 var bytes = require('bytes')
 var chalk = require('chalk')
-var uid = require('uid')
+var { uid } = require('uid')
 var flat = require('flat')
 var path = require('path')
 var parse = require('url').parse
@@ -96,17 +96,16 @@ module.exports = function (defaults, options) {
       if (options.filter && !options.filter(ctx)) {
         this.log = Log({}, { log: () => {} })
       } else {
-        var logfn = options.log || console.log
-        var logwrap = (fmt, level, msg, meta) => {
+        var logfn = options.log
+        var logwrap = ({ timestamp, severity, message, payload }, log) => {
           if (this.log._nest) {
             var color = options.color !== false && String(process.env.SMPLOG_COLORS) !== 'false'
             var arrow = this.log._first ? ' ┌  ' : ' ├  '
             arrow = color ? chalk.gray(arrow) : arrow
-            msg = color ? chalk.gray(msg) : msg
-            meta = color ? chalk.dim.gray(meta || '') : meta
-            logfn(fmt, level, arrow + msg, meta)
+            message = color ? chalk.gray(message) : message
+            (logfn || log)({ timestamp, severity, message: arrow + message, payload })
           } else {
-            logfn(fmt, level, msg, meta)
+            (logfn || log)({ timestamp, severity, message, payload })
           }
           this.log._first = false
         }

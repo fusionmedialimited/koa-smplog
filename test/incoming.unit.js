@@ -1,18 +1,18 @@
-require('chai').should()
-var test = require('ava').test
+var { beforeEach, serial: test } = require('ava')
 var st = require('supertest')
 var koa = require('koa')
 var fmt = require('util').format
 var strip_ansi = require('strip-ansi')
+var intercept = require('intercept-stdout')
 
 var log = require('..')
 
-test.beforeEach(function (t) {
+beforeEach(function (t) {
   t.context.app = test_server()
 })
 
-test('the app should not log incoming requests if incoming=false', function (t) {
-  return st(t.context.app.listen(0))
+test('the app should log incoming requests if incoming=true', function (t) {
+  return st(t.context.app)
     .get('/')
     .expect(200, { success: 'ok' })
     .then(() => {
@@ -23,20 +23,26 @@ test('the app should not log incoming requests if incoming=false', function (t) 
       t.context.app.stdout
         .split('\n')
         .filter(Boolean)
+        .filter((s) => !s.match(/DeprecationWarning/))
         .map(strip_ansi)
         .forEach((line, i) => {
-          line.should.match(expected[i])
+          t.regex(line, expected[i])
         })
     })
 })
 
 function test_server () {
   var app = koa()
-  app.stdout = ''
-  var logfn = function () { app.stdout += (fmt.apply(null, arguments) + '\n') }
-  app.use(log({}, { log: logfn, incoming: true }))
+  app.use(log({}, { incoming: true }))
   app.use(respond)
-  return app
+  var server = app.listen()
+  var restore = intercept((msg) => {
+    server.stdout += msg
+    return ''
+  })
+  server.stdout = ''
+  server.on('close', () => restore())
+  return server
 }
 
 function * respond (next) {

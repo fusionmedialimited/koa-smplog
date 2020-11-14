@@ -1,19 +1,19 @@
-require('chai').should()
-var test = require('ava').test
+var { beforeEach, serial: test } = require('ava')
 var st = require('supertest')
 var koa = require('koa')
 var mount = require('koa-mount')
 var fmt = require('util').format
 var strip_ansi = require('strip-ansi')
+var intercept = require('intercept-stdout')
 
 var log = require('..')
 
-test.beforeEach(function (t) {
+beforeEach(function (t) {
   t.context.app = test_server()
 })
 
 test('the app should not log duplicate lines when a logging apps are mounted', function (t) {
-  return st(t.context.app.listen(0))
+  return st(t.context.app)
     .get('/mount')
     .expect(200, { success: 'ok' })
     .then(() => {
@@ -25,21 +25,27 @@ test('the app should not log duplicate lines when a logging apps are mounted', f
         .filter(Boolean)
         .map(strip_ansi)
         .forEach((line, i) => {
-          line.should.match(expected[i])
+          t.regex(line, expected[i])
         })
     })
 })
 
 function test_server () {
-  var app = koa()
   var mounted = koa()
-  app.stdout = ''
-  var logfn = function () { app.stdout += (fmt.apply(null, arguments) + '\n') }
-  mounted.use(log({ mount: 'mounted' }, { log: logfn }))
+  mounted.use(log({ mount: 'mounted' }))
   mounted.use(respond)
-  app.use(log({}, { log: logfn }))
+
+  var app = koa()
+  app.use(log({}))
   app.use(mount('/mount', mounted))
-  return app
+  var server = app.listen()
+  var restore = intercept((msg) => {
+    server.stdout += msg.replace(/\n$/, '')
+    return ''
+  })
+  server.stdout = ''
+  server.on('close', () => restore())
+  return server
 }
 
 function * respond (next) {

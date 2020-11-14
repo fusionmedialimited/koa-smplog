@@ -1,54 +1,65 @@
-require('chai').should()
-var test = require('ava').test
+var { serial: test, afterEach } = require('ava')
 var st = require('supertest')
 var koa = require('koa')
 var fmt = require('util').format
-var strip = require('chalk').stripColor
+var strip = require('strip-ansi')
+var intercept = require('intercept-stdout')
 
 var log = require('..')
 
+var restore
+afterEach(() => restore && restore())
+
 test('the app should log uncaught errors', function (t) {
   const app = test_server()
-  return st(app.listen(0))
+  return st(app)
     .get('/throw')
     .expect(500)
+    .then(() => app.close())
     .then(() => {
       var lines = app.stdout
         .split('\n')
         .filter(Boolean)
+        .filter((s) => !s.match(/DeprecationWarning/))
         .map(parse_line)
-      lines[0].meta.error.message.should.equal('this is an error')
-      lines[0].meta.error.name.should.equal('Error')
-      lines[0].meta.error.prop1.should.equal('error-prop')
-      lines[0].meta.error.longline.length.should.equal(255)
-      lines[0].meta.error.should.not.have.property('nested.n.n')
-      lines[0].meta.error.should.not.have.property('toonested.n.n.n')
+      t.is(lines[0].meta.error.message, 'this is an error')
+      t.is(lines[0].meta.error.name, 'Error')
+      t.is(lines[0].meta.error.prop1, 'error-prop')
+      t.is(lines[0].meta.error.longline.length, 255)
+      t.falsy(lines[0].meta.error.nested)
+      t.falsy(lines[0].meta.error.toonested)
     })
 })
 
 test('the app should use custom error formatters', function (t) {
   const app = test_server({ format_error: (err) => ({ name: err.name }) })
-  return st(app.listen(0))
+  return st(app)
     .get('/throw')
     .expect(500)
+    .then(() => app.close())
     .then(() => {
       var lines = app.stdout
         .split('\n')
         .filter(Boolean)
+        .filter((s) => !s.match(/DeprecationWarning/))
         .map(parse_line)
-      lines[0].meta.error.should.deep.equal({ name: 'Error' })
+
+      t.deepEqual(lines[0].meta.error, { name: 'Error' })
     })
 })
 
-function test_server (opts = {}) {
+function test_server (opts) {
   var app = koa()
-  app.stdout = ''
-  var logfn = function () { app.stdout += (fmt.apply(null, arguments) + '\n') }
-  opts.log = logfn
   app.use(log({}, opts))
   app.use(throw_err)
   app.on('error', () => {})
-  return app
+  var server = app.listen()
+  restore = intercept((msg) => {
+    server.stdout += msg
+    return ''
+  })
+  server.stdout = ''
+  return server
 }
 
 function * throw_err (next) {
@@ -61,7 +72,7 @@ function * throw_err (next) {
 }
 
 function parse_line (line) {
-  var format = /\[([^\]]*)]\s+([^{]*)([\s\S]*)/gm
+  var format = /\[(.*?)]\s+(.*)?smplog::(.*)/gm
   var match = format.exec(strip(line))
   return {
     level: match[1],
