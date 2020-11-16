@@ -50,7 +50,7 @@
     "passthrough-counter": "1.0.0",
     "request": "2.88.2",
     "request-intercept": "0.0.5",
-    "smplog": "0.1.1",
+    "smplog": "0.1.2",
     "uid": "2.0.0"
   },
   "ava": {
