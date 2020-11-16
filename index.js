@@ -98,14 +98,15 @@ module.exports = function (defaults, options) {
       } else {
         var logfn = options.log
         var logwrap = ({ timestamp, severity, message, payload }, log) => {
+          var fn = logfn || log
           if (this.log._nest) {
             var color = options.color !== false && String(process.env.SMPLOG_COLORS) !== 'false'
             var arrow = this.log._first ? ' ┌  ' : ' ├  '
             arrow = color ? chalk.gray(arrow) : arrow
             message = color ? chalk.gray(message) : message
-            (logfn || log)({ timestamp, severity, message: arrow + message, payload })
+            fn({ timestamp, severity, message: arrow + message, payload })
           } else {
-            (logfn || log)({ timestamp, severity, message, payload })
+            fn({ timestamp, severity, message, payload })
           }
           this.log._first = false
         }
